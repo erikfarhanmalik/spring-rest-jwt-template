@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Optional;
 
 import static com.erik.rest.security.SecurityConstants.HEADER_NAME;
 import static com.erik.rest.security.SecurityConstants.KEY;
@@ -39,7 +40,7 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
     }
 
     private UsernamePasswordAuthenticationToken authenticate(HttpServletRequest request) {
-        String token = request.getHeader(HEADER_NAME);
+        String token = getToken(request.getHeader(HEADER_NAME));
         if (token != null) {
             Claims user = Jwts.parserBuilder()
                     .setSigningKey(Keys.hmacShaKeyFor(KEY.getBytes()))
@@ -53,5 +54,10 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
             }
         }
         return null;
+    }
+
+    private String getToken(String token) {
+        return Optional.ofNullable(token).map(t -> token.replace("Bearer ", ""))
+                .orElse(null);
     }
 }
